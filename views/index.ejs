@@ -1,0 +1,68 @@
+<html>
+<head>
+<title></title>
+<style>
+    span.name{
+        color: green;
+    }
+</style>
+<!--     <link rel='stylesheet' href='/stylesheets/style.css' /> -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type ="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type ="text/javascript">
+        $(document).ready(function (){
+            // this triggers the connection event in our server!
+            var socket = io.connect();
+            // we'll write all the socket stuff after the above line!
+
+            var current_user;
+
+            function get_name(){
+                 var user_name = prompt('What\'s your name?');
+                 current_user = user_name;
+                 socket.emit('create:name',{username: user_name});
+            }
+            get_name();
+
+            socket.on('name:failed',function(data){
+                get_name();
+            })
+
+            socket.on('send:all',function(data){
+                console.log(data);
+                $('#chat').append(data.history);
+            })
+
+            socket.on('send:new_message',function(data){
+                $('#chat').append(data.new_message);
+            })
+
+            $('#msg_box').submit(function(){
+                var message = $('#message').val();
+                console.log(message);
+                var current_message = '<p><span class = "name">' + current_user + '</span> : '+message + '</p>';
+                $('#chat').append(current_message);
+                socket.emit('send:message',{message:current_message});
+                return false;
+            })
+
+
+        })
+    </script>
+</head>
+<body>
+    <div id = 'errors'></div>
+    <div id = 'chat'></div>
+    <div id = 'chatroom'>
+        <fieldset>
+            <legend>Welcome to the chatroom!</legend>
+            <form id = 'msg_box'>
+                <input type="text" name = 'message' id = 'message'>
+                <input type="submit" id = 'msg_submit' value = 'send message'>
+            </form>
+        </fieldset>
+        
+    </div>
+
+</body>
+</html><br>
